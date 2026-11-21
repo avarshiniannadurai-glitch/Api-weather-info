@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather Information</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(120deg, #74ebd5, #ACB6E5);
+            text-align: center;
+            padding: 50px;
+        }
+
+        .container {
+            background: light purple;
+            width: 350px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 5px 15px gray;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        input {
+            padding: 12px;
+            width: 80%;
+            border: 1px solid gray;
+            border-radius: 8px;
+            margin: 15px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #007bff;
+            color: light purple;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #0056b3;
+            transform: scale(1.05);
+        }
+
+        #result {
+            margin-top: 20px;
+            color: #333;
+            line-height: 2;
+            font-size: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1> Weather Information</h1>
+        <hr>
+
+        <input type="text" id="city" placeholder="Enter city name">
+
+        <br>
+
+        <button onclick="get()">Get Data</button>
+
+        <div id="result"></div>
+
+    </div>
+
+    <script>
+
+        function get() {
+
+            let place = document.getElementById("city").value;
+
+            if(place == "") {
+                alert("Enter city name");
+                return;
+            }
+
+            document.getElementById("result").innerHTML = "Loading...";
+
+            fetch("https://geocoding-api.open-meteo.com/v1/search?name=" + place + "&count=1&language=en&format=json")
+
+            .then(response => response.json())
+
+            .then(data => {
+
+                if(!data.results) {
+                    document.getElementById("result").innerHTML = "City not found";
+                    return;
+                }
+
+                let longitude = data.results[0].longitude;
+                let latitude = data.results[0].latitude;
+                let cityName = data.results[0].name;
+
+                weather_details(longitude, latitude, cityName);
+
+            })
+
+            .catch(error => console.log(error));
+
+        }
+
+        function weather_details(lo, la, cityName) {
+
+            fetch("https://api.open-meteo.com/v1/forecast?latitude=" + la + "&longitude=" + lo + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code")
+
+            .then(response => response.json())
+
+            .then(data => {
+
+                document.getElementById("result").innerHTML =
+                    "<h2>" + cityName + "</h2>" +
+                    " Temperature: " + data.current.temperature_2m + " °C <br>" +
+                    " Humidity: " + data.current.relative_humidity_2m + " % <br>" +
+                    " Feels Like: " + data.current.apparent_temperature + " °C <br>" +
+                    " Weather Code: " + data.current.weather_code;
+
+            })
+
+            .catch(error => console.log(error));
+
+        }
+
+    </script>
+
+</body>
+</html>
